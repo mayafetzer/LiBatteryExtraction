@@ -8,7 +8,7 @@ Bucknell University
 
 Machine learning framework for modeling and optimizing **metal leaching processes** from lithium-ion battery materials.
 
-This repository contains a full pipeline for **forward modeling, reverse process prediction, and active learning** to better understand and optimize the extraction of critical metals such as **Lithium (Li), Cobalt (Co), Manganese (Mn), and Nickel (Ni)**. The workflow integrates data preprocessing, model training, uncertainty sampling, and interpretability analysis to support **AI-assisted process design for hydrometallurgical recycling**.
+This repository contains a full pipeline for **forward modeling** to better understand and optimize the extraction of critical metals such as **Lithium (Li), Cobalt (Co), Manganese (Mn), and Nickel (Ni)**. The workflow integrates data preprocessing, model training, uncertainty sampling, and interpretability analysis to support **AI-assisted process design for hydrometallurgical recycling**.
 
 ---
 
@@ -19,8 +19,6 @@ The goal of this project is to apply modern machine learning methods to predict 
 The workflow includes:
 
 **Forward Modeling** – Predict metal extraction efficiencies from experimental conditions.
-
-**Reverse Modeling** – Predict optimal process conditions from desired metal recovery targets.
 
 **Active Learning** – Identify experimental conditions with high model uncertainty to guide future experiments.
 
@@ -66,32 +64,6 @@ The forward model predicts metal extraction efficiencies from experimental param
 * Cobalt extraction (%)
 * Manganese extraction (%)
 * Nickel extraction (%)
-
----
-
-### Reverse Modeling
-
-The reverse model predicts optimal process conditions for a desired extraction target.
-
-Example:
-
-Desired output:
-
-* Li extraction = 95%
-* Co extraction = 90%
-* Mn extraction = 85%
-* Ni extraction = 92%
-
-Model prediction:
-
-* Temperature
-* Time
-* Reagent type
-* Reducing agent
-* Reagent concentration
-* Feed composition
-
-This approach enables AI-assisted process design for battery recycling experiments.
 
 ---
 
