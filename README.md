@@ -2,6 +2,10 @@
 
 By: Maya Fetzer, Jude Okolie, Alnur Gazizuly
 
+Department of Chemical Engineering
+
+Bucknell University
+
 Machine learning framework for modeling and optimizing **metal leaching processes** from lithium-ion battery materials.
 
 This repository contains a full pipeline for **forward modeling, reverse process prediction, and active learning** to better understand and optimize the extraction of critical metals such as **Lithium (Li), Cobalt (Co), Manganese (Mn), and Nickel (Ni)**. The workflow integrates data preprocessing, model training, uncertainty sampling, and interpretability analysis to support **AI-assisted process design for hydrometallurgical recycling**.
