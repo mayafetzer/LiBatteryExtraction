@@ -1,6 +1,6 @@
-# MetalLeaching
+# Lithium-Ion Battery Extraction
 
-By: Maya Fetzer, Jude Okolie, Alnur Gazizuly
+By: Maya A. Fetzer, Jude A. Okolie, Alnur Gazizuly
 
 Department of Chemical Engineering
 
