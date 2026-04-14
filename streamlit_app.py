@@ -51,125 +51,58 @@ def load_models():
 
 models = load_models()
 
-# --------------------------------------------------------------
-# Input Column Definitions
-# --------------------------------------------------------------
-numeric_cols = [
-    "Li in feed %",
-    "Co in feed %",
-    "Mn in feed %",
-    "Ni in feed %",
-    "Concentration, M",
-    "Concentration %",
-    "Time,min",
-    "Temperature, C"
-]
 
-categorical_cols = [
-    "Leaching agent",
-    "Type of reducing agent"
-]
+st.title("Lithium-Ion Battery Leaching Predictor")
 
-all_cols = numeric_cols + categorical_cols
+st.write(
+"Predict Li, Co, Mn, and Ni leaching efficiency using machine learning."
+)
 
-# --------------------------------------------------------------
-# Input Method Selector
-# --------------------------------------------------------------
-st.header("📥 Provide Input Data")
-method = st.radio("Choose input method:", ["Manual Input", "Upload CSV"])
+# ============================================================
+# INPUTS
+# ============================================================
 
-# --------------------------------------------------------------
-# Manual Input Form
-# --------------------------------------------------------------
-def manual_input():
-    st.subheader("📝 Manual Input")
+Li_feed = st.number_input("Li in feed %",0.0,10.0,5.0)
+Co_feed = st.number_input("Co in feed %",0.0,60.0,20.0)
+Mn_feed = st.number_input("Mn in feed %",0.0,20.0,5.0)
+Ni_feed = st.number_input("Ni in feed %",0.0,40.0,10.0)
 
-    data = {}
+acid = st.number_input("Leaching agent concentration (M)",0.1,6.0,1.5)
 
-    for col in numeric_cols:
-        data[col] = st.number_input(col, step=0.01, value=0.0)
+reduct = st.number_input("Reducing agent concentration %",0.0,25.0,1.0)
 
-    data["Leaching agent"] = st.selectbox(
-        "Leaching agent",
-        ["ORGANIC_ACID", "INORGANIC_ACID", "BASE", "UNKNOWN"]
-    )
+time = st.number_input("Leaching time (min)",0,1080,60)
 
-    data["Type of reducing agent"] = st.selectbox(
-        "Type of reducing agent",
-        ["YES", "NO", "UNKNOWN"]
-    )
+temp = st.number_input("Temperature (°C)",20,100,70)
 
-    return pd.DataFrame([data])
+# ============================================================
+# PREDICT
+# ============================================================
 
-# --------------------------------------------------------------
-# CSV Upload
-# --------------------------------------------------------------
-def upload_input():
-    st.subheader("📤 Upload Input CSV File")
-    file = st.file_uploader("Upload input CSV", type=["csv"])
-    if file:
-        df = pd.read_csv(file)
-        missing = [c for c in all_cols if c not in df.columns]
-        if missing:
-            st.error(f"❌ Missing required columns: {missing}")
-            return None
-        st.write("✅ Preview:")
-        st.dataframe(df.head())
-        return df
-    return None
+if st.button("Predict"):
 
-# Determine which pipeline to use
-def detect_pipeline(df):
-    if all(c in df.columns for c in categorical_cols):
-        return "withcat"
-    else:
-        return "nocat"
+    X = pd.DataFrame({
 
-# Run predictions
-def run_predictions(df):
-    pipeline_type = detect_pipeline(df)
-    st.info(f"📌 Using **{pipeline_type.upper()}** models.")
+        "Li in feed %":[Li_feed],
+        "Co in feed %":[Co_feed],
+        "Mn in feed %":[Mn_feed],
+        "Ni in feed %":[Ni_feed],
+        "Concentration, M":[acid],
+        "Concentration %":[reduct],
+        "Time,min":[time],
+        "Temperature, C":[temp]
 
-    results = pd.DataFrame(index=df.index)
+    })
 
-    for metal in ["Li", "Co", "Mn", "Ni"]:
-        key = f"{pipeline_type}_{metal}"
+    Li_pred = models["Li"].predict(X)[0]
+    Co_pred = models["Co"].predict(X)[0]
+    Mn_pred = models["Mn"].predict(X)[0]
+    Ni_pred = models["Ni"].predict(X)[0]
 
-        if key not in models:
-            st.error(f"❌ Model not found: {key}")
-            continue
+    st.subheader("Predicted Leaching Efficiency")
 
-        model = models[key]
-        try:
-            results[f"pred_{metal}"] = model.predict(df)
-        except Exception as e:
-            st.error(f"Prediction failed for {metal}: {e}")
-
-    return results
-
-# --------------------------------------------------------------
-# Main Logic
-# --------------------------------------------------------------
-if method == "Manual Input":
-    df_input = manual_input()
-else:
-    df_input = upload_input()
-
-if df_input is not None:
-    if st.button("🔮 Predict"):
-        preds = run_predictions(df_input)
-
-        st.subheader("✅ Predictions")
-        st.dataframe(preds)
-
-        # Save Excel output
-        output = pd.concat([df_input, preds], axis=1)
-        out_path = "predictions.xlsx"
-        output.to_excel(out_path, index=False)
-
-        st.download_button(
-            "📥 Download Results",
-            data=open(out_path, "rb").read(),
-            file_name="predictions.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    st.metric("Li %",round(Li_pred,2))
+    st.metric("Co %",round(Co_pred,2))
+    st.metric("Mn %",round(Mn_pred,2))
+    st.metric("Ni %",round(Ni_pred,2))
         )
