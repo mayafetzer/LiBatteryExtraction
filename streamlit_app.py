@@ -17,8 +17,8 @@ METAL_COLORS = {"Li": "#4e9af1", "Co": "#e05c5c", "Mn": "#7bc67e", "Ni": "#f0a50
 # Expected model filenames
 MODEL_FILES = {
     metal: {
-        "withcat":    f"best_tuned_withcat_{metal}.pkl",
-        "withoutcat": f"best_tuned_withoutcat_{metal}.pkl",
+        "withcat":    f"models/best_tuned_withcat_{metal}.pkl",
+        "withoutcat": f"models/best_tuned_withoutcat_{metal}.pkl",
     }
     for metal in METALS
 }
