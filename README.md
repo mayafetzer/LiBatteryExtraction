@@ -101,7 +101,7 @@ These plots help reveal how experimental variables influence metal recovery.
 
 Clone the repository:
 
-git clone https://github.com/mayafetzer/MetalLeaching.git
+git clone https://github.com/mayafetzer/LIBBatteryExtraction.git
 cd MetalLeaching
 
 Create a virtual environment:
@@ -125,24 +125,6 @@ Required Python packages include:
 
 ---
 
-## Running the Pipeline
-
-The pipeline can be run using the main notebook:
-
-notebooks/MetalLeachingPipeline.ipynb
-
-or by running the Python training script:
-
-python src/train_models.py
-
-The pipeline performs the following steps:
-
-1. Clean and preprocess the dataset
-2. Train multiple machine learning models
-3. Evaluate model performance
-4. Generate explainability plots
-5. Save trained models and results
-
 ## Applications
 
 This framework can be applied to several areas of materials and chemical engineering, including:
@@ -164,18 +146,3 @@ Planned extensions include:
 * Multi-objective optimization
 * Integration with laboratory automation
 * Real-time experimental recommendation systems
-
----
-
-## Citation
-
-If you use this repository in academic work, please cite:
-
-Machine Learning Assisted Optimization of Metal Leaching Processes
-
-
-May A. Fetzer
-Machine Learning for Sustainable Materials Processing
-
-
-https://metalleaching.streamlit.app/
