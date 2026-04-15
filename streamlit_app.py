@@ -67,7 +67,15 @@ with st.expander("📦 Model file status", expanded=not any_loaded):
                 icon = "✅" if available[metal][variant] else "❌"
                 st.markdown(f"{icon} `{MODEL_FILES[metal][variant]}`")
     if not any_loaded:
-        st.error("No model files found. Place `.pkl` files in the same directory as `app.py`.")
+        st.error("No model files found. Check the folder/filenames below and update MODEL_FILES in app.py.")
+        st.subheader("🔍 Debug: .pkl files found on disk")
+        import glob
+        cwd_files = glob.glob("*.pkl") + glob.glob("**/*.pkl", recursive=True)
+        if cwd_files:
+            st.code("\n".join(sorted(cwd_files)))
+        else:
+            st.warning("No .pkl files found anywhere under the working directory.")
+        st.info(f"Working directory: {os.getcwd()}")
         st.stop()
 
 st.divider()
