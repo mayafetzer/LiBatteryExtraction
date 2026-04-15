@@ -50,9 +50,9 @@ def build_pipeline(cat_cols, num_cols, model):
 
 def train_models(df, progress_bar):
     """Train withcat and nocat models for each metal. Returns dict of models + metrics."""
-    results   = {}
-    step      = 0
-    total     = len(METALS) * 2
+    results = {}
+    step    = 0
+    total   = len(METALS) * 2
 
     for metal in METALS:
         results[metal] = {}
@@ -61,9 +61,6 @@ def train_models(df, progress_bar):
                 results[metal][v] = {"model": None, "r2": None, "mae": None, "rmse": None}
             step += 2
             continue
-
-        y = df[metal].dropna()
-        idx = y.index
 
         for variant in ["withcat", "nocat"]:
             step += 1
@@ -78,7 +75,23 @@ def train_models(df, progress_bar):
                 cat_use   = []
                 num_use   = feat_cols
 
-            X = df.loc[idx, feat_cols]
+            if not feat_cols:
+                results[metal][variant] = {"model": None, "r2": None, "mae": None, "rmse": None}
+                continue
+
+            # Drop rows where either features or target are NaN
+            subset = df[feat_cols + [metal]].dropna()
+            if len(subset) < 10:
+                results[metal][variant] = {"model": None, "r2": None, "mae": None, "rmse": None}
+                st.warning(f"Not enough data for {metal} ({variant}): only {len(subset)} clean rows.")
+                continue
+
+            X = subset[feat_cols]
+            y = subset[metal]
+
+            # Adaptive CV: never more folds than samples in the smallest split
+            n_folds = min(5, len(X) // 2)
+
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42
             )
@@ -92,11 +105,18 @@ def train_models(df, progress_bar):
                  {"n_estimators": 200, "max_depth": 6, "min_samples_leaf": 2,
                   "random_state": 42, "n_jobs": -1}),
             ]:
-                pipe = build_pipeline(cat_use, num_use, Model(**params))
-                cv   = cross_val_score(pipe, X_train, y_train, cv=5, scoring="r2")
-                if cv.mean() > best_r2:
-                    best_r2  = cv.mean()
-                    best_pipe = pipe
+                try:
+                    pipe = build_pipeline(cat_use, num_use, Model(**params))
+                    cv   = cross_val_score(pipe, X_train, y_train, cv=n_folds, scoring="r2")
+                    if cv.mean() > best_r2:
+                        best_r2   = cv.mean()
+                        best_pipe = pipe
+                except Exception:
+                    continue
+
+            if best_pipe is None:
+                results[metal][variant] = {"model": None, "r2": None, "mae": None, "rmse": None}
+                continue
 
             best_pipe.fit(X_train, y_train)
             y_pred = best_pipe.predict(X_test)
@@ -105,13 +125,13 @@ def train_models(df, progress_bar):
             rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
             results[metal][variant] = {
-                "model":      best_pipe,
-                "r2":         r2,
-                "mae":        mae,
-                "rmse":       rmse,
-                "feat_cols":  feat_cols,
-                "cat_use":    cat_use,
-                "num_use":    num_use,
+                "model":     best_pipe,
+                "r2":        r2,
+                "mae":       mae,
+                "rmse":      rmse,
+                "feat_cols": feat_cols,
+                "cat_use":   cat_use,
+                "num_use":   num_use,
             }
 
     return results
