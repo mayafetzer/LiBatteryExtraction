@@ -3,17 +3,17 @@ import pandas as pd
 import pickle
 import numpy as np
 import os
-
+ 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Li Battery Extraction Predictor",
     page_icon="🔋",
     layout="wide",
 )
-
+ 
 METALS = ["Li", "Co", "Mn", "Ni"]
 METAL_COLORS = {"Li": "#4e9af1", "Co": "#e05c5c", "Mn": "#7bc67e", "Ni": "#f0a500"}
-
+ 
 # Expected model filenames
 MODEL_FILES = {
     metal: {
@@ -22,10 +22,10 @@ MODEL_FILES = {
     }
     for metal in METALS
 }
-
+ 
 # Features used by each model type
 CAT_FEATURES = ["Leaching agent", "Type of reducing agent"]
-
+ 
 # ── Load models ───────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_all_models():
@@ -39,16 +39,16 @@ def load_all_models():
             else:
                 models[metal][variant] = None
     return models
-
+ 
 models = load_all_models()
-
+ 
 # ── Check which models are available ─────────────────────────────────────────
 available = {
     metal: {v: m is not None for v, m in models[metal].items()}
     for metal in METALS
 }
-any_loaded = any(available[m][v] for m in METALS for v in ["withcat", "nocat"])
-
+any_loaded = any(available[m][v] for m in METALS for v in MODEL_FILES[m])
+ 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.title("🔋 Li Battery Extraction Predictor")
 st.markdown(
@@ -56,7 +56,7 @@ st.markdown(
     "lithium-ion batteries. Runs both *with-categorical* and *no-categorical* "
     "model variants side by side."
 )
-
+ 
 # Model availability status
 with st.expander("📦 Model file status", expanded=not any_loaded):
     cols = st.columns(len(METALS))
@@ -69,9 +69,9 @@ with st.expander("📦 Model file status", expanded=not any_loaded):
     if not any_loaded:
         st.error("No model files found. Place the .pkl files in a `models/` folder next to `app.py`.")
         st.stop()
-
+ 
 st.divider()
-
+ 
 # ── Input form ────────────────────────────────────────────────────────────────
 with st.form("inputs"):
     st.subheader("📋 Feed Composition")
@@ -80,7 +80,7 @@ with st.form("inputs"):
     co_feed = c2.number_input("Co in feed (%)",  0.0, 100.0, 20.0, 0.1)
     mn_feed = c3.number_input("Mn in feed (%)",  0.0, 100.0, 10.0, 0.1)
     ni_feed = c4.number_input("Ni in feed (%)",  0.0, 100.0, 10.0, 0.1)
-
+ 
     st.subheader("⚗️ Leaching Conditions")
     c5, c6, c7, c8 = st.columns(4)
     leaching_agent = c5.selectbox("Leaching agent", [
@@ -94,15 +94,15 @@ with st.form("inputs"):
         "Sucrose", "Starch", "Na2SO3", "Fe", "Al",
     ])
     reducing_conc  = c8.number_input("Reducing agent conc. (%)", 0.0, 100.0, 4.0, 0.5)
-
+ 
     c9, c10, _ = st.columns([1, 1, 2])
     time_min = c9.number_input("Time (min)",        0.0, 600.0, 60.0, 5.0)
     temp_c   = c10.number_input("Temperature (°C)", 0.0, 200.0, 80.0, 5.0)
-
+ 
     submitted = st.form_submit_button(
         "🔮 Predict All Metals", use_container_width=True, type="primary"
     )
-
+ 
 # ── Prediction ────────────────────────────────────────────────────────────────
 if submitted:
     row_withcat = {
@@ -118,10 +118,10 @@ if submitted:
         "Temperature, C":         temp_c,
     }
     row_nocat = {k: v for k, v in row_withcat.items() if k not in CAT_FEATURES}
-
+ 
     df_withcat    = pd.DataFrame([row_withcat])
     df_nocat = pd.DataFrame([row_nocat])
-
+ 
     results = {}
     for metal in METALS:
         results[metal] = {}
@@ -135,10 +135,10 @@ if submitted:
                     results[metal][variant] = f"Error: {e}"
             else:
                 results[metal][variant] = None
-
+ 
     st.divider()
     st.subheader("📊 Predicted Extraction Efficiencies")
-
+ 
     # ── Per-metal cards ───────────────────────────────────────────────────────
     cols = st.columns(len(METALS))
     for i, metal in enumerate(METALS):
@@ -158,7 +158,7 @@ if submitted:
                 else:
                     st.metric(label=label, value=f"{val:.1f}%")
                     st.progress(int(val))
-
+ 
     # ── Summary table ─────────────────────────────────────────────────────────
     st.divider()
     st.subheader("📋 Summary Table")
@@ -177,12 +177,13 @@ if submitted:
             else:
                 row[f"{metal} (%)"] = "Error"
         table_rows.append(row)
-
+ 
     df_summary = pd.DataFrame(table_rows).set_index("Model")
     st.dataframe(df_summary, use_container_width=True)
-
+ 
     with st.expander("📄 Raw input values"):
         st.dataframe(
             pd.DataFrame([row_withcat]).T.rename(columns={0: "Value"}),
             use_container_width=True,
         )
+ 
