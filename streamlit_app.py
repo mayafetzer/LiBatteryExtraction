@@ -149,7 +149,7 @@ uploaded = st.file_uploader(
 
 if uploaded:
     try:
-        df_raw = pd.read_excel(uploaded, header=0, skiprows=[1])
+        df_raw = pd.read_excel(uploaded, header=0, skiprows=[0])
         df_raw = fuzzy_rename(df_raw)
     except Exception as e:
         st.error(f"Could not read file: {e}")
