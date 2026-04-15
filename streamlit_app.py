@@ -17,8 +17,8 @@ METAL_COLORS = {"Li": "#4e9af1", "Co": "#e05c5c", "Mn": "#7bc67e", "Ni": "#f0a50
 # Expected model filenames
 MODEL_FILES = {
     metal: {
-        "withcat":    f"models/best_tuned_withcat_{metal}.pkl",
-        "withoutcat": f"models/best_tuned_withoutcat_{metal}.pkl",
+        "withcat": f"models/best_tuned_withcat_{metal}.pkl",
+        "nocat":   f"models/best_tuned_nocat_{metal}.pkl",
     }
     for metal in METALS
 }
@@ -47,13 +47,13 @@ available = {
     metal: {v: m is not None for v, m in models[metal].items()}
     for metal in METALS
 }
-any_loaded = any(available[m][v] for m in METALS for v in ["withcat", "withoutcat"])
+any_loaded = any(available[m][v] for m in METALS for v in ["withcat", "nocat"])
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.title("🔋 Li Battery Extraction Predictor")
 st.markdown(
     "Predict **extraction efficiency (%)** for Li, Co, Mn, and Ni from spent "
-    "lithium-ion batteries. Runs both *with-categorical* and *without-categorical* "
+    "lithium-ion batteries. Runs both *with-categorical* and *no-categorical* "
     "model variants side by side."
 )
 
@@ -63,19 +63,11 @@ with st.expander("📦 Model file status", expanded=not any_loaded):
     for i, metal in enumerate(METALS):
         with cols[i]:
             st.markdown(f"**{metal}**")
-            for variant in ["withcat", "withoutcat"]:
+            for variant in ["withcat", "nocat"]:
                 icon = "✅" if available[metal][variant] else "❌"
                 st.markdown(f"{icon} `{MODEL_FILES[metal][variant]}`")
     if not any_loaded:
-        st.error("No model files found. Check the folder/filenames below and update MODEL_FILES in app.py.")
-        st.subheader("🔍 Debug: .pkl files found on disk")
-        import glob
-        cwd_files = glob.glob("*.pkl") + glob.glob("**/*.pkl", recursive=True)
-        if cwd_files:
-            st.code("\n".join(sorted(cwd_files)))
-        else:
-            st.warning("No .pkl files found anywhere under the working directory.")
-        st.info(f"Working directory: {os.getcwd()}")
+        st.error("No model files found. Place the .pkl files in a `models/` folder next to `app.py`.")
         st.stop()
 
 st.divider()
@@ -125,15 +117,15 @@ if submitted:
         "Time,min":               time_min,
         "Temperature, C":         temp_c,
     }
-    row_withoutcat = {k: v for k, v in row_withcat.items() if k not in CAT_FEATURES}
+    row_nocat = {k: v for k, v in row_withcat.items() if k not in CAT_FEATURES}
 
     df_withcat    = pd.DataFrame([row_withcat])
-    df_withoutcat = pd.DataFrame([row_withoutcat])
+    df_nocat = pd.DataFrame([row_nocat])
 
     results = {}
     for metal in METALS:
         results[metal] = {}
-        for variant, df in [("withcat", df_withcat), ("withoutcat", df_withoutcat)]:
+        for variant, df in [("withcat", df_withcat), ("nocat", df_nocat)]:
             m = models[metal][variant]
             if m is not None:
                 try:
@@ -156,9 +148,9 @@ if submitted:
                 f"<h3 style='color:{color}; text-align:center'>{metal}</h3>",
                 unsafe_allow_html=True,
             )
-            for variant in ["withcat", "withoutcat"]:
+            for variant in ["withcat", "nocat"]:
                 val = results[metal][variant]
-                label = "With categorical" if variant == "withcat" else "Without categorical"
+                label = "With categorical" if variant == "withcat" else "No categorical"
                 if val is None:
                     st.markdown(f"**{label}:** *(model not found)*")
                 elif isinstance(val, str):
@@ -173,7 +165,7 @@ if submitted:
     table_rows = []
     for variant_label, variant_key in [
         ("With categorical",    "withcat"),
-        ("Without categorical", "withoutcat"),
+        ("No categorical", "nocat"),
     ]:
         row = {"Model": variant_label}
         for metal in METALS:
