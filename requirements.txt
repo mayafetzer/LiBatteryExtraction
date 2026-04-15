@@ -1,8 +1,8 @@
 streamlit
 pandas
 numpy
-shap
-scikit-learn==1.5.0
-matplotlib
-seaborn
-openpyxl
+scikit-learn
+pickle-mixin
+xgboost
+lightgbm
+catboost
