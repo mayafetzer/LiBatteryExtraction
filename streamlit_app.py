@@ -159,6 +159,24 @@ def train_models(df):
 # ─────────────────────────────────────────────────────────────
 st.title("🔋 Li Battery Extraction – Train & Predict")
 
+st.markdown("""
+This app predicts the extraction efficiency (%) of Li, Co, Mn, and Ni from spent lithium-ion battery black mass using 
+machine learning.
+ 
+Upload your dataset (or use the LIBExtractionCleaned.xlsx file), train models on your data, then enter 
+leaching conditions to predict metal recovery yields instantly.
+ 
+**How it works:**
+- 📂 **Upload** your Excel file containing feed composition and leaching parameters
+- 🚀 **Train** Gradient Boosting and Random Forest models on your data
+- 🔮 **Predict** extraction yields for new experimental conditions
+ 
+> Models are trained in two variants: with categorical features (leaching agent, 
+> reducing agent type) and without, so you can compare their influence on accuracy.
+""")
+ 
+st.divider()
+
 uploaded = st.file_uploader("Upload Excel file", type=["xlsx", "xls"])
 
 if uploaded:
