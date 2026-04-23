@@ -165,6 +165,9 @@ machine learning.
  
 Upload your dataset (or use the LIBExtractionCleaned.xlsx file), train models on your data, then enter 
 leaching conditions to predict metal recovery yields instantly.
+
+Note that Concentration in % is the concentration of the reductant, while Concentration in M is the concentration of the acid or leaching agent. 
+
  
 **How it works:**
 - 📂 **Upload** your Excel file containing feed composition and leaching parameters
